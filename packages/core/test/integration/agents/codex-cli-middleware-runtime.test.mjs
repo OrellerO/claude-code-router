@@ -413,7 +413,7 @@ test("Codex app-server delegates public Git marketplaces and leaves account-priv
   });
 });
 
-test("Codex app-server uses interactive approval without widening the requested sandbox", { skip: process.platform === "win32" }, () => {
+test("Codex app-server preserves the requested approval reviewer without widening the sandbox", { skip: process.platform === "win32" }, () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), "ccr-runtime-native-permissions-"));
   const runtimeFile = writeRuntimeScript(dir);
   const fakeCodex = path.join(dir, "fake-codex");
@@ -441,12 +441,10 @@ test("Codex app-server uses interactive approval without widening the requested 
     encoding: "utf8",
     env: {
       ...process.env,
-      CCR_CODEX_ALLOW_AUTO_REVIEW: "",
       CCR_CODEX_REMOTE_FRONTEND_MODE: "app",
       CCR_PROFILE_SCOPE: "ccr",
       CCR_REAL_CODEX_CLI_PATH: fakeCodex,
-      CODEX_HOME: codexHome,
-      CODEXL_CODEX_ALLOW_AUTO_REVIEW: ""
+      CODEX_HOME: codexHome
     },
     input: [
       JSON.stringify({
@@ -479,9 +477,9 @@ test("Codex app-server uses interactive approval without widening the requested 
 
   assert.equal(result.status, 0, result.stderr);
   const responses = new Map(result.stdout.trim().split(/\r?\n/).map((line) => JSON.parse(line)).map((response) => [response.id, response]));
-  assert.equal(responses.get(1).result.params.approvalsReviewer, "user");
+  assert.equal(responses.get(1).result.params.approvalsReviewer, "auto_review");
   assert.deepEqual(responses.get(1).result.params.sandboxPolicy, readOnlySandbox);
-  assert.equal(responses.get(2).result.params.approvalsReviewer, "user");
+  assert.equal(responses.get(2).result.params.approvalsReviewer, "guardian_subagent");
   assert.deepEqual(responses.get(2).result.params.sandboxPolicy, workspaceWriteSandbox);
   assert.deepEqual(responses.get(3).result.requirements, {
     application: {
@@ -490,7 +488,7 @@ test("Codex app-server uses interactive approval without widening the requested 
   });
 });
 
-test("Codex app-server preserves auto-review when explicitly enabled", { skip: process.platform === "win32" }, () => {
+test("Codex app-server preserves auto-review without an opt-in environment variable", { skip: process.platform === "win32" }, () => {
   const dir = mkdtempSync(path.join(os.tmpdir(), "ccr-runtime-native-auto-review-"));
   const runtimeFile = writeRuntimeScript(dir);
   const fakeCodex = path.join(dir, "fake-codex");
@@ -512,7 +510,6 @@ test("Codex app-server preserves auto-review when explicitly enabled", { skip: p
     encoding: "utf8",
     env: {
       ...process.env,
-      CCR_CODEX_ALLOW_AUTO_REVIEW: "1",
       CCR_CODEX_REMOTE_FRONTEND_MODE: "app",
       CCR_PROFILE_SCOPE: "ccr",
       CCR_REAL_CODEX_CLI_PATH: fakeCodex,

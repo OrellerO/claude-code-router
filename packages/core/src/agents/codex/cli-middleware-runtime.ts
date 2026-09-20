@@ -796,18 +796,6 @@ function copyPermissionFields(source, target) {
   copyJsonField(source, target, "approvalPolicy");
   copyJsonField(source, target, "sandboxPolicy");
   copyJsonField(source, target, "approvalsReviewer");
-  if (target.approvalsReviewer !== undefined) {
-    target.approvalsReviewer = normalizeCodexApprovalsReviewer(target.approvalsReviewer);
-  }
-}
-
-function normalizeCodexApprovalsReviewer(value) {
-  if (codexAppAutoReviewEnabled()) return value;
-  return value === "auto_review" || value === "guardian_subagent" ? "user" : value;
-}
-
-function codexAppAutoReviewEnabled() {
-  return boolEnv("CCR_CODEX_ALLOW_AUTO_REVIEW") || boolEnv("CODEXL_CODEX_ALLOW_AUTO_REVIEW");
 }
 
 function copyCollaborationModelFields(source, target) {
